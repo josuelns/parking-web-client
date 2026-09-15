@@ -1,29 +1,34 @@
-import { takeLatest, call, put, all } from 'redux-saga/effects';
-import { get } from 'lodash';
-import { ActionType } from 'typesafe-actions';
+import { call, put, takeLatest } from 'redux-saga/effects';
+import type { AxiosResponse } from 'axios';
+import type { ActionType } from 'typesafe-actions';
+import type { ParkingRecord } from '../../../types/parking';
+import { getApiErrorMessage } from '../../../services/api-error';
+import { parkingApi } from '../../../services/parking-api';
 import * as actions from './actions';
 import * as types from './types';
-import axios, { axiosConfig} from '../../../services/axios';
-import Cookies from 'js-cookie';
 
-
-export function* registerNewVehicle ({ payload }: ActionType<typeof actions.entraceNewVehicleRequest>) {
+export function* registerNewVehicle({
+  payload,
+}: ActionType<typeof actions.entraceNewVehicleRequest>) {
   try {
-    const response = yield call(axios.post, '/parking', payload,axiosConfig)
+    const response: AxiosResponse<ParkingRecord> = yield call(
+      parkingApi.registerEntry,
+      payload,
+    );
 
-    yield put(actions.entraceNewVehicleSuccess())
-    
-    console.log('@entraceNewVehicle/payload:: ', payload)
-  } catch (err) {
-    const error = get(err, 'response.data.error', [])
-    const statusCode = get(err, 'response.data.statusCode', 0)
-    const messages = get(err, 'response.data.message', [])
-    console.log(`Erro[${statusCode}]:: ${error} -`, messages)
+    yield put(
+      actions.entraceNewVehicleSuccess({
+        plate: response.data.plate,
+        message: `Entrada confirmada para ${response.data.plate}.`,
+      }),
+    );
+  } catch (error) {
+    const apiError = getApiErrorMessage(error, 'Não foi possível registrar a entrada.');
 
-    yield put(actions.entraceNewVehicleFailure())
+    yield put(actions.entraceNewVehicleFailure(apiError));
   }
 }
 
-export default all([
-  takeLatest(types.REGISTER_NEW_VEHICLE_REQUEST, registerNewVehicle),
-])
+export default function* entraceNewVehicleSaga() {
+  yield takeLatest(types.REGISTER_NEW_VEHICLE_REQUEST, registerNewVehicle);
+}

@@ -1,23 +1,12 @@
 import { action } from 'typesafe-actions';
+import type { ApiErrorPayload, PlatePayload } from '../../../types/parking';
 import * as types from './types';
 
-export function exitVehicleRequest ({
-  plate
-}: {
-  plate: string;
-}) {
-  console.log('request')
-  return action(types.EXIT_VEHICLE_REQUEST, {
-    plate
-  });
-}
+export const exitVehicleRequest = (payload: PlatePayload) =>
+  action(types.EXIT_VEHICLE_REQUEST, payload);
 
-export function exitVehicleSuccess () {
-  console.log('oi')
-  return action(types.EXIT_VEHICLE_SUCCESS);
-}
+export const exitVehicleSuccess = (payload: { plate: string; message: string }) =>
+  action(types.EXIT_VEHICLE_SUCCESS, payload);
 
-export function exitVehicleFailure () {
-  console.log('ish')
-  return action(types.EXIT_VEHICLE_FAILURE);
-}
+export const exitVehicleFailure = (payload: ApiErrorPayload) =>
+  action(types.EXIT_VEHICLE_FAILURE, payload);

@@ -1,31 +1,37 @@
-import React, {FC} from 'react';
-
+import { FC } from 'react';
 import { Provider } from 'react-redux';
-import { store } from './store';
-
-import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import { ToastContainer } from 'react-toastify';
+import { GlobalStyle } from './assets/utils/styles/global-style';
+import { theme } from './assets/utils/styles/theme';
 import EntrancePage from './pages/entracePage';
 import ExitPage from './pages/exitPage';
-import HistoryPage from './pages/historyPage'
-import HisotryPageReservation from './pages/historyPageReservation'
+import HistoryPage from './pages/historyPage';
+import HistoryReservationPage from './pages/historyPageReservation';
+import { store } from './store';
+import 'react-toastify/dist/ReactToastify.css';
 
-import { GlobalStyle} from '../src/assets/utils/styles/global-style'
-
-const App: FC = () => {
-  return (
-    <Provider store={store}>
-      <GlobalStyle />
-      <Router>
-        <Switch>
-            <Route exact path="/entrace" component={EntrancePage} />
-            <Route exact path="/exit" component={ExitPage} />
-            <Route exact path="/history/:id" component={HistoryPage} />
-            <Route exact path="/history/:plate/:id" component={HisotryPageReservation} />
-            <Route path="*" component={EntrancePage} />
-          </Switch>
-      </Router>
-    </Provider>
-  );
-}
+const App: FC = () => (
+  <Provider store={store}>
+    <GlobalStyle />
+    <BrowserRouter>
+      <Routes>
+        <Route path="/entrace" element={<EntrancePage />} />
+        <Route path="/entrance" element={<Navigate to="/entrace" replace />} />
+        <Route path="/exit" element={<ExitPage />} />
+        <Route path="/history/:plate" element={<HistoryPage />} />
+        <Route path="/history/:plate/:sessionId" element={<HistoryReservationPage />} />
+        <Route path="*" element={<Navigate to="/entrace" replace />} />
+      </Routes>
+    </BrowserRouter>
+    <ToastContainer
+      position="top-center"
+      autoClose={3500}
+      hideProgressBar={false}
+      theme="colored"
+      toastStyle={{ backgroundColor: theme.colors.primary }}
+    />
+  </Provider>
+);
 
 export default App;

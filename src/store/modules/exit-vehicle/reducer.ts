@@ -1,33 +1,46 @@
-import { IVehicleForm, outVehicleAction } from './types';
-import axios from '../../../services/axios';
+import type { ExitVehicleState } from './types';
 import * as types from './types';
+import type * as actions from './actions';
 
-const initialState: IVehicleForm = {
+type ExitAction = ReturnType<
+  | typeof actions.exitVehicleRequest
+  | typeof actions.exitVehicleSuccess
+  | typeof actions.exitVehicleFailure
+>;
+
+const initialState: ExitVehicleState = {
   isLoading: false,
-  error: false,
+  error: null,
+  message: null,
+  lastPlate: null,
 };
 
-export default function exitVehicle (
+export default function exitVehicleReducer(
   state = initialState,
-  action: outVehicleAction
-): IVehicleForm {
+  action: ExitAction,
+): ExitVehicleState {
   switch (action.type) {
     case types.EXIT_VEHICLE_REQUEST:
-      console.log('reducer request')  
-    return {
-        ...state,
-        isLoading: true,
-      };
-    case types.EXIT_VEHICLE_SUCCESS:
-      console.log('reducer passou')
       return {
         ...state,
-        isLoading: false
+        isLoading: true,
+        error: null,
+        message: null,
+      };
+    case types.EXIT_VEHICLE_SUCCESS:
+      return {
+        ...state,
+        isLoading: false,
+        error: null,
+        message: action.payload.message,
+        lastPlate: action.payload.plate,
       };
     case types.EXIT_VEHICLE_FAILURE:
       return {
-        ...initialState,
-        error: true,
+        ...state,
+        isLoading: false,
+        error: action.payload.message,
+        message: null,
       };
     default:
       return state;

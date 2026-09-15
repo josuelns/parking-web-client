@@ -1,85 +1,121 @@
-import React, {FC, useState } from 'react';
-
-import { useDispatch, useSelector } from 'react-redux'
-import { StoreState } from '../../store/createStore'
-
-import { entraceNewVehicleRequest} from '../../store/modules/entrace-new-vehicle/actions'
-import { paymentVehicleRequest } from '../../store/modules/payment-vehicle/actions'
-import { exitVehicleRequest } from '../../store/modules/exit-vehicle/actions'
-import { historyVehicleRequest } from '../../store/modules/history-vehicle/actions'
-
-import InputMask from 'react-input-mask'
-
-import {StyledForm} from '../../assets/utils//styles/form'
-
-import {Link} from 'react-router-dom'
+import { FC, FormEvent, useState } from 'react';
+import { useDispatch } from 'react-redux';
+import InputMask from 'react-input-mask';
+import { Link } from 'react-router-dom';
+import { useSliceFeedback } from '../../hooks/useSliceFeedback';
+import { useParkingFormState } from '../../hooks/useParkingFormState';
+import { entraceNewVehicleRequest } from '../../store/modules/entrace-new-vehicle/actions';
+import { paymentVehicleRequest } from '../../store/modules/payment-vehicle/actions';
+import { exitVehicleRequest } from '../../store/modules/exit-vehicle/actions';
+import { isValidPlate, normalizePlate } from '../../types/parking';
+import { StyledForm, StyledHelperText } from '../../assets/utils/styles/form';
 
 interface Props {
-    entrace?: boolean,
-    payment?: boolean,
-    exit?: boolean,
-    history?: boolean    
+  entrace?: boolean;
+  payment?: boolean;
+  exit?: boolean;
+  history?: boolean;
 }
 
-const ParkingForm: FC<Props> = (props) =>{
-    const dispatch = useDispatch();
-    const [Plate, setPlaque] = useState('AAA-0000')
+const ParkingForm: FC<Props> = ({ entrace = false, payment = false, exit = false, history = false }) => {
+  const dispatch = useDispatch();
+  const [plate, setPlate] = useState('');
+  const [validationError, setValidationError] = useState<string | null>(null);
+  const mode = entrace ? 'entrance' : 'exit';
+  const slice = useParkingFormState(mode);
 
-    const {isLoading, error } = useSelector((state: StoreState) => state.entraceNewVehicle);
-  
+  useSliceFeedback(slice, plate);
 
-    function confirmEntrace(){
-        console.log('entrace')
-        dispatch(
-            entraceNewVehicleRequest({
-                plate: Plate
-            })
-        )
+  const validateAndDispatch = (action: 'entrance' | 'payment' | 'exit') => {
+    const normalizedPlate = normalizePlate(plate);
+
+    if (!isValidPlate(normalizedPlate)) {
+      setValidationError('Informe uma placa válida no formato AAA-0000.');
+      return;
     }
 
-    function confirmPayment(){
-        console.log('payment')
-        dispatch(
-            paymentVehicleRequest({
-                plate: Plate
-            })
-        )
-    }
-    
+    setValidationError(null);
+    setPlate(normalizedPlate);
 
-    function setExit(){
-        console.log('exit')
-        dispatch(
-            exitVehicleRequest({
-                plate: Plate
-            })
-        )
+    if (action === 'entrance') {
+      dispatch(entraceNewVehicleRequest({ plate: normalizedPlate }));
+      return;
     }
 
-    // function showHistory(){
-    //     console.log('history')
-    //     dispatch(
-    //         historyVehicleRequest({
-    //             plate: Plate
-    //         })
-    //     )
-    // }
+    if (action === 'payment') {
+      dispatch(paymentVehicleRequest({ plate: normalizedPlate }));
+      return;
+    }
 
-    return (
-        <>
-            {isLoading ? 'carregando...' : ''}
-            <StyledForm id='formParking' onSubmit={(event) => {event.preventDefault()}}>
-                <label>Número da placa:</label>
-                <InputMask type='text' value={Plate} onChange={(prevState) => { setPlaque(prevState.target.value) }} mask='aaa-9999' />
+    dispatch(exitVehicleRequest({ plate: normalizedPlate }));
+  };
 
-                {props.entrace ?  <button onClick={() => confirmEntrace()}>Confirmar Entrada</button> : ''}
-                {props.payment ? <button className='bg_gray' onClick={() => confirmPayment()}>Pagamento</button> : ''}
-                {props.exit ? <button className='bg_white' onClick={() => setExit()}>Saída</button>  : ''}
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
 
-                {props.history ? <Link to={`/history/${Plate}`}>Ver Histórico</Link> : ''}
-            </StyledForm>
-        </>
-    )
-}
+    if (entrace) {
+      validateAndDispatch('entrance');
+    }
+  };
 
-export default ParkingForm
+  return (
+    <>
+      <StyledForm id="formParking" onSubmit={handleSubmit} aria-busy={slice.isLoading}>
+        <label htmlFor="plate-input">Número da placa:</label>
+        <InputMask
+          id="plate-input"
+          type="text"
+          value={plate}
+          onChange={(event) => {
+            setPlate(event.target.value.toUpperCase());
+            setValidationError(null);
+          }}
+          mask="aaa-9999"
+          maskChar=""
+          placeholder="AAA-0000"
+        />
+
+        {validationError ? <StyledHelperText role="alert">{validationError}</StyledHelperText> : null}
+        {slice.isLoading ? <StyledHelperText>Processando...</StyledHelperText> : null}
+
+        {entrace ? (
+          <button type="submit" disabled={slice.isLoading}>
+            Confirmar Entrada
+          </button>
+        ) : null}
+
+        {payment ? (
+          <button
+            type="button"
+            className="bg_gray"
+            disabled={slice.isLoading}
+            onClick={() => validateAndDispatch('payment')}
+          >
+            Pagamento
+          </button>
+        ) : null}
+
+        {exit ? (
+          <button
+            type="button"
+            className="bg_white"
+            disabled={slice.isLoading}
+            onClick={() => validateAndDispatch('exit')}
+          >
+            Saída
+          </button>
+        ) : null}
+
+        {history ? (
+          isValidPlate(normalizePlate(plate)) ? (
+            <Link to={`/history/${normalizePlate(plate)}`}>Ver Histórico</Link>
+          ) : (
+            <span className="history-disabled">Ver Histórico</span>
+          )
+        ) : null}
+      </StyledForm>
+    </>
+  );
+};
+
+export default ParkingForm;

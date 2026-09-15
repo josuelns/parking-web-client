@@ -1,15 +1,9 @@
-import { ActionType } from 'typesafe-actions';
-import * as actions from './actions';
+import type { AsyncSliceState } from '../../../types/parking';
 
-export type paymentVehicleAction = ActionType<typeof actions>;
-
-export interface IVehicleForm {
-  isLoading: boolean;
-  error: boolean;
+export interface PaymentVehicleState extends AsyncSliceState {
+  lastPlate: string | null;
 }
 
-
-export const PAYMENT_VEHICLE_REQUEST = '@auth/PAYMENT_VEHICLE_REQUEST';
-export const PAYMENT_VEHICLE_SUCCESS = '@auth/PAYMENT_VEHICLE_SUCCESS';
-export const PAYMENT_VEHICLE_FAILURE = '@auth/PAYMENT_VEHICLE_FAILURE';
-
+export const PAYMENT_VEHICLE_REQUEST = '@parking/PAYMENT_VEHICLE_REQUEST';
+export const PAYMENT_VEHICLE_SUCCESS = '@parking/PAYMENT_VEHICLE_SUCCESS';
+export const PAYMENT_VEHICLE_FAILURE = '@parking/PAYMENT_VEHICLE_FAILURE';

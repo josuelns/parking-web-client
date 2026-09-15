@@ -1,8 +1,16 @@
 import { combineReducers } from 'redux';
-
-import { StoreState } from '../createStore';
 import entraceNewVehicle from './entrace-new-vehicle/reducer';
+import exitVehicle from './exit-vehicle/reducer';
+import paymentVehicle from './payment-vehicle/reducer';
+import historyVehicle from './history-vehicle/reducer';
 
-export default combineReducers<StoreState>({
-  entraceNewVehicle
+const rootReducer = combineReducers({
+  entraceNewVehicle,
+  exitVehicle,
+  paymentVehicle,
+  historyVehicle,
 });
+
+export type RootState = ReturnType<typeof rootReducer>;
+
+export default rootReducer;

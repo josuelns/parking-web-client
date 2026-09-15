@@ -1,15 +1,12 @@
-import { ActionType } from 'typesafe-actions';
-import * as actions from './actions';
+import type { AsyncSliceState, ParkingRecord } from '../../../types/parking';
 
-export type historyVehicleAction = ActionType<typeof actions>;
-
-export interface IVehicleForm {
-  isLoading: boolean;
-  error: boolean;
+export interface HistoryVehicleState extends AsyncSliceState {
+  plate: string | null;
+  records: ParkingRecord[];
+  selectedRecord: ParkingRecord | null;
 }
 
-
-export const HISTORY_VEHICLE_REQUEST = '@auth/HISTORY_VEHICLE_REQUEST';
-export const HISTORY_VEHICLE_SUCCESS = '@auth/HISTORY_VEHICLE_SUCCESS';
-export const HISTORY_VEHICLE_FAILURE = '@auth/HISTORY_VEHICLE_FAILURE';
-
+export const HISTORY_VEHICLE_REQUEST = '@parking/HISTORY_VEHICLE_REQUEST';
+export const HISTORY_VEHICLE_SUCCESS = '@parking/HISTORY_VEHICLE_SUCCESS';
+export const HISTORY_VEHICLE_FAILURE = '@parking/HISTORY_VEHICLE_FAILURE';
+export const HISTORY_VEHICLE_SELECT = '@parking/HISTORY_VEHICLE_SELECT';

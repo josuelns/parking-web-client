@@ -1,134 +1,91 @@
-import React, { FC } from 'react'
+import { FC, useEffect, useMemo } from 'react';
+import { Link, useParams } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import Header from '../components/header';
+import { useSliceFeedback } from '../hooks/useSliceFeedback';
+import { historyVehicleRequest, historyVehicleSelect } from '../store/modules/history-vehicle/actions';
+import type { RootState } from '../store/modules/rootReducer';
+import { normalizePlate } from '../types/parking';
+import Arrow from '../assets/static/arrow_l.svg';
+import { StyledBodyPage, StyledHeaderPage, StyledListPage } from '../assets/utils/styles/page-history';
 
-import Header from '../components/header'
-import Cards from '../components/cards'
+type ReservationParams = {
+  plate: string;
+  sessionId: string;
+};
 
-import { Link, useParams } from 'react-router-dom'
+const HistoryReservationPage: FC = () => {
+  const dispatch = useDispatch();
+  const { plate = '', sessionId = '' } = useParams<ReservationParams>();
+  const normalizedPlate = normalizePlate(plate);
+  const historySlice = useSelector((state: RootState) => state.historyVehicle);
 
-import {StyledBodyPage, StyledHeaderPage, StyledListPage} from '../assets/utils/styles//page-history'
+  useSliceFeedback(historySlice, `${normalizedPlate}-${sessionId}`);
 
-import Arrow from '../assets/static/arrow_l.svg'
+  useEffect(() => {
+    if (normalizedPlate) {
+      dispatch(historyVehicleRequest({ plate: normalizedPlate }));
+    }
+  }, [dispatch, normalizedPlate]);
 
-type VehicleParking = {
-    time: string,
-    pay: boolean
-}
+  const selectedRecord = useMemo(() => {
+    const fromStore = historySlice.records.find((record) => record.id === sessionId);
 
-type MyParamms = {
-    id: string
-    plate: string
-}
+    if (fromStore) {
+      return fromStore;
+    }
 
-/*
+    return historySlice.selectedRecord?.id === sessionId ? historySlice.selectedRecord : null;
+  }, [historySlice.records, historySlice.selectedRecord, sessionId]);
 
-    <div class="sc-gKckTs jMplId" style="
-    padding: 0px 17px 17px 17px;
-"><aside style="
-    margin-bottom: 22px;
-"><p style="
-    font-family: Open Sans;
-    font-style: normal;
-    font-weight: normal;
-    font-size: 12px;
-    line-height: 16px;
-    text-transform: uppercase;
-    color: #9B9B9B;
-">Placa</p><p style="
-    font-family: Open Sans;
-    font-style: normal;
-    font-weight: normal;
-    font-size: 38px;
-    line-height: 52px;
-/* identical to box height */
-// color: #00BCD4;
-// ">aaa-1234</p></aside><aside style="
-//     margin-bottom: 25px;
-// "><p style="
-//     font-family: Open Sans;
-//     font-style: normal;
-//     font-weight: normal;
-//     font-size: 12px;
-//     line-height: 16px;
-//     text-transform: uppercase;
-//     color: #9B9B9B;
-// ">Status</p><p style="
-//     font-family: Open Sans;
-//     font-style: normal;
-//     font-weight: normal;
-//     font-size: 24px;
-//     line-height: 33px;
-// /* identical to box height */
-//     color: #0A261D;
-// ">Estacionado</p></aside><aside style="
-//     margin-bottom: 41px;
-// "><p style="
-//     font-family: Open Sans;
-//     font-style: normal;
-//     font-weight: normal;
-//     font-size: 12px;
-//     line-height: 16px;
-//     text-transform: uppercase;
-//     color: #9B9B9B;
-// ">Tempo Atual</p><p style="
-//     font-family: Open Sans;
-//     font-style: normal;
-//     font-weight: normal;
-//     font-size: 24px;
-//     line-height: 33px;
-// /* identical to box height */
-//     color: #0A261D;
-// ">1h20 min</p></aside><aside><p style="
-//     font-family: Open Sans;
-//     font-style: normal;
-//     font-weight: normal;
-//     font-size: 12px;
-//     line-height: 16px;
-//     text-transform: uppercase;
-//     color: #9B9B9B;
-// ">Pagamento</p><p style="
-//     font-family: Open Sans;
-//     font-style: normal;
-//     font-weight: normal;
-//     font-size: 24px;
-//     line-height: 33px;
-// /* identical to box height */
-//     color: #0A261D;
-// ">-</p></aside></div>
+  useEffect(() => {
+    if (selectedRecord) {
+      dispatch(historyVehicleSelect(selectedRecord));
+    }
+  }, [dispatch, selectedRecord]);
 
+  const statusLabel = selectedRecord?.status === 'parked' ? 'Estacionado' : 'Finalizado';
 
-const ExitPage: FC = () => {
-    const Params: MyParamms = useParams()
+  return (
+    <>
+      <Header />
+      <section>
+        <StyledBodyPage>
+          <StyledHeaderPage>
+            <Link to={`/history/${normalizedPlate}`} aria-label="Voltar para histórico">
+              <img src={Arrow} alt="" />
+            </Link>
+          </StyledHeaderPage>
 
-    return (
-        <>
-            <Header />
-            <section>
-                <StyledBodyPage>
-                    <StyledHeaderPage>
-                        <Link to={`/history/${Params.plate}`}><img src={Arrow} /></Link>
-                    </StyledHeaderPage>
-                    <StyledListPage>
-                        <aside className='plate'>
-                            <p className='title'>Placa</p>
-                            <p className='plate'>{Params.plate}</p>
-                        </aside>
-                        <aside className='status'>
-                            <p className='title'>Status</p>
-                            <p className='subtitle'>Estacionado</p>
-                        </aside>
-                        <aside className='time'>
-                            <p className='title'>Tempo Atual</p>
-                            <p className='subtitle'>1h20 min</p>
-                        </aside>
-                        <aside className='pay'>
-                            <p className='title'>Pagamento</p>
-                            <p className='subtitle'>-</p>
-                        </aside>
-                    </StyledListPage>
-                </StyledBodyPage>
-            </section>
-        </>
-    )
-}
+          {historySlice.isLoading ? <p>Carregando detalhes...</p> : null}
+          {historySlice.error ? <p role="alert">{historySlice.error}</p> : null}
 
-export default ExitPage
+          {selectedRecord ? (
+            <StyledListPage>
+              <aside className="plate">
+                <p className="title">Placa</p>
+                <p className="plate">{selectedRecord.plate}</p>
+              </aside>
+              <aside className="status">
+                <p className="title">Status</p>
+                <p className="subtitle">{statusLabel}</p>
+              </aside>
+              <aside className="time">
+                <p className="title">Tempo Atual</p>
+                <p className="subtitle">{selectedRecord.elapsedTime}</p>
+              </aside>
+              <aside className="pay">
+                <p className="title">Pagamento</p>
+                <p className="subtitle">{selectedRecord.paymentLabel}</p>
+              </aside>
+            </StyledListPage>
+          ) : !historySlice.isLoading ? (
+            <p>Sessão não encontrada.</p>
+          ) : null}
+        </StyledBodyPage>
+      </section>
+    </>
+  );
+};
+
+export default HistoryReservationPage;

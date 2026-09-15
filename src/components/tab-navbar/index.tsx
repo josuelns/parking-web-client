@@ -1,28 +1,21 @@
-import React, { FC } from 'react';
-
-import {StyledTabNavBar} from '../../assets/utils/styles/tab_navbar'
-
-import {Link} from 'react-router-dom'
+import { FC } from 'react';
+import { Link } from 'react-router-dom';
+import { StyledTabNavBar } from '../../assets/utils/styles/tab_navbar';
 
 interface Props {
-    entrance?: boolean,
-    exit?: boolean,
+  entrance?: boolean;
+  exit?: boolean;
 }
 
-const TabNavBar: FC<Props> = (props) => {
-    return (
-        <>
-            <StyledTabNavBar>
-                <Link to='/entrace' className={props.entrance ? 'active' : ''}>
-                    Entrada
-                </Link>
-                
-                <Link to='/exit' className={props.exit ? 'active' : ''}>
-                    Saída
-                </Link>
-            </StyledTabNavBar>
-        </>
-    )
-}
+const TabNavBar: FC<Props> = ({ entrance = false, exit = false }) => (
+  <StyledTabNavBar>
+    <Link to="/entrace" className={entrance ? 'active' : ''}>
+      Entrada
+    </Link>
+    <Link to="/exit" className={exit ? 'active' : ''}>
+      Saída
+    </Link>
+  </StyledTabNavBar>
+);
 
-export default TabNavBar
+export default TabNavBar;

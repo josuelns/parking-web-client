@@ -1,29 +1,33 @@
-import { takeLatest, call, put, all } from 'redux-saga/effects';
-import { get } from 'lodash';
-import { ActionType } from 'typesafe-actions';
+import { call, put, takeLatest } from 'redux-saga/effects';
+import type { AxiosResponse } from 'axios';
+import type { ActionType } from 'typesafe-actions';
+import type { ParkingRecord } from '../../../types/parking';
+import { normalizePlate } from '../../../types/parking';
+import { getApiErrorMessage } from '../../../services/api-error';
+import { parkingApi } from '../../../services/parking-api';
 import * as actions from './actions';
 import * as types from './types';
-import axios from '../../../services/axios';
-import Cookies from 'js-cookie';
 
-
-export function* paymentVehicle ({ payload }: ActionType<typeof actions.paymentVehicleRequest>) {
+export function* paymentVehicle({
+  payload,
+}: ActionType<typeof actions.paymentVehicleRequest>) {
   try {
-    //const response = yield call(axios.post, `/parking/${payload.plate}/pay`)
+    const plate = normalizePlate(payload.plate);
+    const response: AxiosResponse<ParkingRecord> = yield call(parkingApi.pay, plate);
 
-    yield put(actions.paymentVehicleSuccess())
-    
-    console.log('@paymentVehicle/payload:: ', payload)
-  } catch (err) {
-    const error = get(err, 'response.data.error', [])
-    const statusCode = get(err, 'response.data.statusCode', 0)
-    const messages = get(err, 'response.data.message', [])
-    console.log(`Erro[${statusCode}]:: ${error} -`, messages)
+    yield put(
+      actions.paymentVehicleSuccess({
+        plate: response.data.plate,
+        message: `Pagamento confirmado para ${response.data.plate}.`,
+      }),
+    );
+  } catch (error) {
+    const apiError = getApiErrorMessage(error, 'Não foi possível registrar o pagamento.');
 
-    yield put(actions.paymentVehicleFailure())
+    yield put(actions.paymentVehicleFailure(apiError));
   }
 }
 
-export default all([
-  takeLatest(types.PAYMENT_VEHICLE_REQUEST, paymentVehicle),
-])
+export default function* paymentVehicleSaga() {
+  yield takeLatest(types.PAYMENT_VEHICLE_REQUEST, paymentVehicle);
+}

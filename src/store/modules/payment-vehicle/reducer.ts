@@ -1,34 +1,46 @@
-import { IVehicleForm, paymentVehicleAction } from './types';
-import axios from '../../../services/axios';
+import type { PaymentVehicleState } from './types';
 import * as types from './types';
+import type * as actions from './actions';
 
-const initialState: IVehicleForm = {
+type PaymentAction = ReturnType<
+  | typeof actions.paymentVehicleRequest
+  | typeof actions.paymentVehicleSuccess
+  | typeof actions.paymentVehicleFailure
+>;
+
+const initialState: PaymentVehicleState = {
   isLoading: false,
-  error: false,
+  error: null,
+  message: null,
+  lastPlate: null,
 };
 
-export default function paymentVehicle (
+export default function paymentVehicleReducer(
   state = initialState,
-  action: paymentVehicleAction
-): IVehicleForm {
+  action: PaymentAction,
+): PaymentVehicleState {
   switch (action.type) {
     case types.PAYMENT_VEHICLE_REQUEST:
-      console.log('reducer request')  
-    return {
+      return {
         ...state,
         isLoading: true,
+        error: null,
+        message: null,
       };
     case types.PAYMENT_VEHICLE_SUCCESS:
-      console.log('reducer passou')
       return {
         ...state,
-        isLoading: false
+        isLoading: false,
+        error: null,
+        message: action.payload.message,
+        lastPlate: action.payload.plate,
       };
     case types.PAYMENT_VEHICLE_FAILURE:
-      delete axios.defaults.headers.Authorization;
       return {
-        ...initialState,
-        error: true,
+        ...state,
+        isLoading: false,
+        error: action.payload.message,
+        message: null,
       };
     default:
       return state;

@@ -1,15 +1,9 @@
-import { ActionType } from 'typesafe-actions';
-import * as actions from './actions';
+import type { AsyncSliceState } from '../../../types/parking';
 
-export type outVehicleAction = ActionType<typeof actions>;
-
-export interface IVehicleForm {
-  isLoading: boolean;
-  error: boolean;
+export interface ExitVehicleState extends AsyncSliceState {
+  lastPlate: string | null;
 }
 
-
-export const EXIT_VEHICLE_REQUEST = '@auth/EXIT_VEHICLE_REQUEST';
-export const EXIT_VEHICLE_SUCCESS = '@auth/EXIT_VEHICLE_SUCCESS';
-export const EXIT_VEHICLE_FAILURE = '@auth/EXIT_VEHICLE_FAILURE';
-
+export const EXIT_VEHICLE_REQUEST = '@parking/EXIT_VEHICLE_REQUEST';
+export const EXIT_VEHICLE_SUCCESS = '@parking/EXIT_VEHICLE_SUCCESS';
+export const EXIT_VEHICLE_FAILURE = '@parking/EXIT_VEHICLE_FAILURE';

@@ -1,15 +1,9 @@
-import { ActionType } from 'typesafe-actions';
-import * as actions from './actions';
+import type { AsyncSliceState } from '../../../types/parking';
 
-export type entraceNewVehicleAction = ActionType<typeof actions>;
-
-export interface IVehicleForm {
-  isLoading: boolean;
-  error: boolean;
+export interface EntranceVehicleState extends AsyncSliceState {
+  lastPlate: string | null;
 }
 
-
-export const REGISTER_NEW_VEHICLE_REQUEST = '@auth/REGISTER_NEW_VEHICLE_REQUEST';
-export const REGISTER_NEW_VEHICLE_SUCCESS = '@auth/REGISTER_NEW_VEHICLE_SUCCESS';
-export const REGISTER_NEW_VEHICLE_FAILURE = '@auth/REGISTER_NEW_VEHICLE_FAILURE';
-
+export const REGISTER_NEW_VEHICLE_REQUEST = '@parking/REGISTER_NEW_VEHICLE_REQUEST';
+export const REGISTER_NEW_VEHICLE_SUCCESS = '@parking/REGISTER_NEW_VEHICLE_SUCCESS';
+export const REGISTER_NEW_VEHICLE_FAILURE = '@parking/REGISTER_NEW_VEHICLE_FAILURE';

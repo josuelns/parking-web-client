@@ -1,46 +1,35 @@
-import React, {FC } from 'react';
-
-import Card from '../card'
-
-type VehicleParking = {
-    time: string,
-    pay: boolean
-}
+import { FC } from 'react';
+import { useSelector } from 'react-redux';
+import type { RootState } from '../../store/modules/rootReducer';
+import Card from '../card';
+import { StyledCardsSection, StyledEmptyState } from '../../assets/utils/styles/card';
 
 interface Props {
-    id: string
+  plate: string;
 }
 
-const Cards: FC<Props> = () =>{
-    return (
-        <>
-            <section>  
-                <Card />
-                <Card />
-                <Card />
-                <Card />
-                <Card />
-                <Card />
-                <Card />
-                <Card />
-                <Card />
-                <Card />
-                <Card />
-                <Card />
-                <Card />
-                <Card />
-                <Card />
-                <Card />
-                <Card />
-                <Card />
-                <Card />
-                <Card />
-                <Card />
-                <Card />
-                <Card />
-            </section>
-        </>
-    )
-}
+const Cards: FC<Props> = ({ plate }) => {
+  const { records, isLoading, error } = useSelector((state: RootState) => state.historyVehicle);
 
-export default Cards
+  if (isLoading) {
+    return <StyledEmptyState>Carregando histórico...</StyledEmptyState>;
+  }
+
+  if (error) {
+    return <StyledEmptyState role="alert">{error}</StyledEmptyState>;
+  }
+
+  if (records.length === 0) {
+    return <StyledEmptyState>Nenhum registro encontrado para {plate.toUpperCase()}.</StyledEmptyState>;
+  }
+
+  return (
+    <StyledCardsSection>
+      {records.map((record) => (
+        <Card key={record.id} record={record} plate={plate} />
+      ))}
+    </StyledCardsSection>
+  );
+};
+
+export default Cards;

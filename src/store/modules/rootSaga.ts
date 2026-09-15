@@ -1,9 +1,14 @@
-import { all } from 'redux-saga/effects';
+import { all, fork } from 'redux-saga/effects';
+import entraceNewVehicleSaga from './entrace-new-vehicle/sagas';
+import exitVehicleSaga from './exit-vehicle/sagas';
+import paymentVehicleSaga from './payment-vehicle/sagas';
+import historyVehicleSaga from './history-vehicle/sagas';
 
-import entraceNewVehicle from './entrace-new-vehicle/sagas';
-
-export default function* rootSaga () {
-  return yield all([
-    entraceNewVehicle
-  ])
+export default function* rootSaga() {
+  yield all([
+    fork(entraceNewVehicleSaga),
+    fork(exitVehicleSaga),
+    fork(paymentVehicleSaga),
+    fork(historyVehicleSaga),
+  ]);
 }

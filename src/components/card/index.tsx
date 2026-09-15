@@ -1,26 +1,26 @@
-import React, {FC } from 'react';
+import { FC } from 'react';
+import { Link } from 'react-router-dom';
+import type { ParkingRecord } from '../../types/parking';
+import { StyledCard } from '../../assets/utils/styles/card';
 
-import {StyledCard} from '../../assets/utils/styles/card'
-
-import {Link} from 'react-router-dom'
-
-const Card: FC = () =>{
-    return (
-        <>
-            <Link to='/history/aaa-1234/1'>
-                <StyledCard >
-                    <aside>
-                        <p className='title'>Tempo Atual</p>
-                        <p className='subtitle'>1h20 min</p>
-                    </aside>
-                    <aside>
-                        <p className='title'>Pagamento</p>
-                        <p className='subtitle'>-</p>
-                    </aside>
-                </StyledCard>
-            </Link>
-        </>
-    )
+interface Props {
+  record: ParkingRecord;
+  plate: string;
 }
 
-export default Card
+const Card: FC<Props> = ({ record, plate }) => (
+  <Link to={`/history/${plate}/${record.id}`} aria-label={`Ver detalhes da sessão ${record.id}`}>
+    <StyledCard>
+      <aside>
+        <p className="title">Tempo Atual</p>
+        <p className="subtitle">{record.elapsedTime}</p>
+      </aside>
+      <aside>
+        <p className="title">Pagamento</p>
+        <p className="subtitle">{record.paymentLabel}</p>
+      </aside>
+    </StyledCard>
+  </Link>
+);
+
+export default Card;

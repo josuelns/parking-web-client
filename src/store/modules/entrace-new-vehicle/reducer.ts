@@ -1,34 +1,46 @@
-import { IVehicleForm, entraceNewVehicleAction } from './types';
-import axios from '../../../services/axios';
+import type { EntranceVehicleState } from './types';
 import * as types from './types';
+import type * as actions from './actions';
 
-const initialState: IVehicleForm = {
+type EntranceAction = ReturnType<
+  | typeof actions.entraceNewVehicleRequest
+  | typeof actions.entraceNewVehicleSuccess
+  | typeof actions.entraceNewVehicleFailure
+>;
+
+const initialState: EntranceVehicleState = {
   isLoading: false,
-  error: false,
+  error: null,
+  message: null,
+  lastPlate: null,
 };
 
-export default function entraceNewVehicle (
+export default function entraceNewVehicleReducer(
   state = initialState,
-  action: entraceNewVehicleAction
-): IVehicleForm {
+  action: EntranceAction,
+): EntranceVehicleState {
   switch (action.type) {
     case types.REGISTER_NEW_VEHICLE_REQUEST:
-      console.log('reducer request')  
-    return {
+      return {
         ...state,
         isLoading: true,
+        error: null,
+        message: null,
       };
     case types.REGISTER_NEW_VEHICLE_SUCCESS:
-      console.log('reducer passou')
       return {
         ...state,
-        isLoading: false
+        isLoading: false,
+        error: null,
+        message: action.payload.message,
+        lastPlate: action.payload.plate,
       };
     case types.REGISTER_NEW_VEHICLE_FAILURE:
-      delete axios.defaults.headers.Authorization;
       return {
-        ...initialState,
-        error: true,
+        ...state,
+        isLoading: false,
+        error: action.payload.message,
+        message: null,
       };
     default:
       return state;
